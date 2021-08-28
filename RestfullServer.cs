@@ -1,4 +1,4 @@
-
+using Newtonsoft.Json;
 using System;
 using System.Net;
 using System.Text;
@@ -12,13 +12,21 @@ namespace RestAPI
         public static string url = "http://localhost:5000/";
         public static int requestCount = 0;
 
-        public static async Task<string> ControllerHandler(string method, string path, string body)
+        public static string ControllerHandler(string method, string path, string auth, string body)
         {
-            Console.WriteLine("Controller: " + method + " " + path + " " + body);
+            Console.WriteLine("Controller: " + method + " " + path + " " + auth + " " + body);
 
-            // TODO Code here
-
-            return "{status:\"OK\"}";
+            try
+            {
+                // TODO Code here
+                
+                return "{status:\"Method not supported\"}";
+            }
+            catch(Exception exc)
+            {
+                Console.Error.WriteLine(exc);
+                return "{status:\"Exception: "+exc.ToString()+"\"}";
+            }            
         }
 
         public static async Task HandleIncomingConnections()
@@ -42,6 +50,8 @@ namespace RestAPI
                 Console.WriteLine(req.UserHostName);
                 Console.WriteLine(req.UserAgent);
                 Console.WriteLine(req.Url.AbsolutePath);
+                var auth = req.Headers["authorization"];
+                Console.WriteLine(auth);
                 var content = "";
                 if (req.HttpMethod == "POST" || req.HttpMethod == "PUT")
                 {
@@ -64,7 +74,11 @@ namespace RestAPI
                 }
                 else
                 {
-                    var respData = await ControllerHandler(req.HttpMethod, req.RawUrl, content);
+                    var respData = ControllerHandler(req.HttpMethod, req.RawUrl, auth, content);
+
+                    Console.WriteLine("ResponseData: " + respData);
+                    Console.WriteLine();
+                    Console.WriteLine();
 
                     // Write the response info
                     byte[] data = Encoding.UTF8.GetBytes(respData);
@@ -96,4 +110,3 @@ namespace RestAPI
         }
     }
 }
-
